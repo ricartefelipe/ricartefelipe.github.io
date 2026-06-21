@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Felipe Ricarte — Templates de Código para Produção</title>
+  <meta name="description" content="Templates e boilerplates prontos para produção: microserviços Java, cobrança recorrente, SaaS multitenant e diagnóstico arquitetural com IA." />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1025048472"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-1025048472');
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0d0f14;
+      color: #eaedf4;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 64px 24px; }
+    h1 { font-size: 1.75rem; margin-bottom: 8px; }
+    p.lead { color: #7a8099; margin-bottom: 40px; }
+    .grid { display: grid; gap: 16px; }
+    a.card {
+      display: block;
+      padding: 20px 24px;
+      background: #13161e;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      color: inherit;
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+    a.card:hover { border-color: #4f7cff; }
+    .card h2 { font-size: 1.1rem; margin-bottom: 4px; color: #7c9fff; }
+    .card span { font-size: 0.875rem; color: #7a8099; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Templates de Código para Produção</h1>
+    <p class="lead">Arquitetura sênior aplicada — Java, Spring Boot, Python e Next.js.</p>
+    <div class="grid">
+      <a class="card" href="/order-service-landing/">
+        <h2>Order Service</h2>
+        <span>Microserviço de pedidos idempotente — Spring Boot</span>
+      </a>
+      <a class="card" href="/assinaflow-landing/">
+        <h2>AssinaFlow</h2>
+        <span>Cobrança recorrente com outbox, retry e suspensão</span>
+      </a>
+      <a class="card" href="/archlens-landing/">
+        <h2>ArchLens</h2>
+        <span>Diagnóstico arquitetural com RAG e análise estática</span>
+      </a>
+      <a class="card" href="/comercial-cloud-landing/">
+        <h2>ComercialCloud</h2>
+        <span>Boilerplate SaaS PDV + retaguarda multitenant</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
