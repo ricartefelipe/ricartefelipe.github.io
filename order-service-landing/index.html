@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Service — Template de Ingestão Idempotente de Pedidos em Spring Boot</title>
+  <meta name="description" content="Microserviço de referência pronto para produção: ingestão idempotente de pedidos sob concorrência, cálculo correto de totais, Clean Architecture, ADRs e runbook. Parta de uma base sólida, não de uma folha em branco." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e29;
+      --accent: #4f7cff;
+      --accent2: #7c9fff;
+      --text: #eaedf4;
+      --muted: #7a8099;
+      --border: rgba(255,255,255,0.07);
+      --danger: #ff5c5c;
+      --success: #3ecf8e;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.6; font-size: 16px; }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 80px 0; }
+    .section--alt { background: var(--bg2); }
+
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(13,15,20,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    nav .brand { font-size: 15px; font-weight: 700; color: var(--text); }
+    nav .brand span { color: var(--accent2); }
+    nav .nav-links { display: flex; gap: 24px; align-items: center; }
+    nav .nav-links a { color: var(--muted); font-size: 14px; }
+    nav .nav-links a:hover { color: var(--text); text-decoration: none; }
+    nav .cta-nav { background: var(--accent); color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; transition: opacity .15s; }
+    nav .cta-nav:hover { opacity: .88; text-decoration: none; }
+    @media (max-width: 720px) { nav .nav-links a:not(.cta-nav) { display: none; } }
+
+    .hero { padding: 90px 0 64px; text-align: center; }
+    .hero .eyebrow { display: inline-block; background: rgba(79,124,255,0.12); color: var(--accent2); border: 1px solid rgba(79,124,255,0.25); border-radius: 100px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; margin-bottom: 28px; }
+    .hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 24px; color: #fff; }
+    .hero h1 em { font-style: normal; background: linear-gradient(90deg, #4f7cff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero .sub { font-size: 19px; color: var(--muted); max-width: 640px; margin: 0 auto 36px; line-height: 1.65; }
+    .hero .sub strong { color: var(--text); }
+    .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .cta-primary { display: inline-block; background: var(--accent); color: #fff; padding: 15px 36px; border-radius: 8px; font-size: 16px; font-weight: 700; transition: transform .15s, opacity .15s; }
+    .cta-primary:hover { opacity: .9; transform: translateY(-1px); text-decoration: none; }
+    .cta-secondary { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border); padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; transition: border-color .15s; }
+    .cta-secondary:hover { border-color: var(--accent2); text-decoration: none; }
+
+    .code-card { margin: 56px auto 0; max-width: 600px; background: #0b0d12; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.5); text-align: left; }
+    .code-card .bar { display: flex; gap: 7px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .code-card .bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .code-card .bar i:nth-child(1) { background: #ff5f57; }
+    .code-card .bar i:nth-child(2) { background: #febc2e; }
+    .code-card .bar i:nth-child(3) { background: #28c840; }
+    .code-card pre { padding: 20px; overflow-x: auto; font-family: 'SF Mono', 'JetBrains Mono', Menlo, monospace; font-size: 13px; line-height: 1.7; color: #c9d1e3; }
+    .code-card .c { color: var(--muted); }
+    .code-card .g { color: var(--success); }
+    .code-card .b { color: var(--accent2); }
+
+    h2.section-title { font-size: clamp(26px, 3.5vw, 36px); font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px; text-align: center; }
+    .section-intro { color: var(--muted); text-align: center; max-width: 640px; margin: 0 auto 48px; font-size: 17px; }
+
+    .grid { display: grid; gap: 18px; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 760px) { .grid-3 { grid-template-columns: 1fr; } }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card h3 { font-size: 16px; color: #fff; margin-bottom: 8px; font-weight: 700; }
+    .card p { color: var(--muted); font-size: 15px; }
+    .card .ico { font-size: 22px; margin-bottom: 12px; display: block; }
+
+    .pain { background: var(--bg2); }
+    .pain ul { list-style: none; max-width: 700px; margin: 0 auto; }
+    .pain li { padding: 14px 0 14px 34px; position: relative; border-bottom: 1px solid var(--border); color: var(--text); }
+    .pain li::before { content: "✕"; color: var(--danger); position: absolute; left: 0; font-weight: 700; }
+
+    .stack { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .stack span { font-size: 13px; color: var(--text); border: 1px solid var(--border); background: var(--bg3); border-radius: 8px; padding: 8px 14px; }
+
+    .offer-wrap { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    @media (max-width: 760px) { .offer-wrap { grid-template-columns: 1fr; } }
+    .offer { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 30px; display: flex; flex-direction: column; }
+    .offer--featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .offer .tag { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); font-weight: 700; margin-bottom: 8px; }
+    .offer .price { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .offer .price small { font-size: 14px; color: var(--muted); font-weight: 500; }
+    .offer ul { list-style: none; margin: 16px 0 24px; flex: 1; }
+    .offer li { padding: 8px 0 8px 26px; position: relative; color: var(--text); font-size: 15px; }
+    .offer li::before { content: "✓"; color: var(--success); position: absolute; left: 0; font-weight: 700; }
+
+    .bundle { border: 1px solid var(--accent); border-radius: 14px; padding: 30px; background: linear-gradient(180deg, rgba(79,124,255,0.08), transparent); text-align: center; }
+    .bundle h3 { color: #fff; font-size: 22px; margin-bottom: 10px; }
+    .bundle p { color: var(--muted); max-width: 600px; margin: 0 auto 18px; }
+
+    .faq details { border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 12px; background: var(--bg2); }
+    .faq summary { cursor: pointer; font-weight: 600; color: var(--text); font-size: 16px; list-style: none; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; float: right; color: var(--accent2); font-weight: 700; }
+    .faq details[open] summary::after { content: "−"; }
+    .faq p { color: var(--muted); margin-top: 12px; font-size: 15px; }
+
+    footer { border-top: 1px solid var(--border); padding: 48px 0; text-align: center; color: var(--muted); font-size: 14px; }
+    footer .brand { color: var(--text); font-weight: 700; }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1025848472"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-1025848472');
+  </script>
+</head>
+<body>
+  <nav>
+    <div class="brand">Order<span>Service</span></div>
+    <div class="nav-links">
+      <a href="#kit">O que vem</a>
+      <a href="#preco">Preço</a>
+      <a href="#bundle">Bundle</a>
+      <a href="#faq">FAQ</a>
+      <a class="cta-nav" href="https://pay.kiwify.com.br/l2v6dYI" target="_blank" rel="noopener">Quero o template</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <span class="eyebrow">Template Spring Boot · pronto para produção</span>
+      <h1>Ingestão de pedidos <em>idempotente</em>, sem reinventar a fundação</h1>
+      <p class="sub">
+        Microserviço de referência em <strong>Java 21 + Spring Boot 3</strong>: deduplicação por
+        <code>externalOrderId</code> <strong>sob concorrência</strong>, cálculo correto de totais,
+        Clean Architecture, <strong>ADRs e runbook</strong>. Você parte de uma base sólida, não de uma folha em branco.
+      </p>
+      <div class="cta-row">
+        <a class="cta-primary" href="https://pay.kiwify.com.br/l2v6dYI" target="_blank" rel="noopener">Comprar a licença</a>
+        <a class="cta-secondary" href="#kit">Ver o que vem no kit</a>
+      </div>
+      <div class="code-card">
+        <div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="c"># Sistema A envia o mesmo pedido duas vezes (timeout/retry)</span>
+$ POST /orders  {"externalOrderId":"A-123456", ...}
+<span class="g">201 Created</span>   <span class="c"># pedido criado</span>
+
+$ POST /orders  {"externalOrderId":"A-123456", ...}
+<span class="b">200 OK</span>        <span class="c"># já existe — NÃO duplica</span>
+
+<span class="c"># ...sob concorrência, com qualquer número de instâncias.</span></pre>
+      </div>
+    </div>
+  </header>
+
+  <section class="section pain">
+    <div class="container">
+      <h2 class="section-title">O "happy path" é fácil. O resto é que dói.</h2>
+      <p class="section-intro">Integrar pedidos entre dois sistemas vira problema exatamente nos detalhes que ninguém tem tempo de fazer direito.</p>
+      <ul>
+        <li>Pedido <strong>duplicado</strong> quando o emissor reenvia a requisição (timeout, retry, concorrência).</li>
+        <li>Total com <strong>centavo errado</strong> por arredondamento/escala monetária malfeitos.</li>
+        <li>Falha em produção <strong>sem rastreabilidade</strong> (sem correlation id, sem runbook).</li>
+        <li>Semanas montando a fundação em vez de entregar a integração.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="kit">
+    <div class="container">
+      <h2 class="section-title">O que vem no kit</h2>
+      <p class="section-intro">Código + documentação que prova como e por quê — não só um exemplo de "hello world".</p>
+      <div class="grid grid-3">
+        <div class="card"><span class="ico">🔁</span><h3>Ingestão idempotente</h3><p>Dedup por <code>externalOrderId</code> sob concorrência: 201 ao criar, 200 quando já existe. Nunca duplica.</p></div>
+        <div class="card"><span class="ico">🧮</span><h3>Totais corretos</h3><p><code>BigDecimal</code>, escala 2, HALF_UP em <code>lineTotal</code> e <code>totalAmount</code>. Sem surpresa de centavo.</p></div>
+        <div class="card"><span class="ico">🔎</span><h3>Consulta p/ integração</h3><p><code>GET /orders/{id}</code> e listagem paginada/filtrável por status, prontos para o sistema consumidor.</p></div>
+        <div class="card"><span class="ico">📈</span><h3>Observabilidade</h3><p>Correlation id (<code>X-Correlation-Id</code>), Actuator e logs estruturados para operar com confiança.</p></div>
+        <div class="card"><span class="ico">🗃️</span><h3>Migrações versionadas</h3><p>PostgreSQL 16 + Liquibase (YAML): schema reprodutível e versionado.</p></div>
+        <div class="card"><span class="ico">📚</span><h3>Documentação madura</h3><p>ADRs (Clean Architecture, ingestão idempotente), <code>architecture.md</code>, <code>integration.md</code>, <code>runbook.md</code>.</p></div>
+      </div>
+      <div style="margin-top:40px" class="stack">
+        <span>Java 21</span><span>Spring Boot 3</span><span>PostgreSQL 16</span><span>Liquibase</span><span>OpenAPI / Swagger</span><span>Docker Compose</span><span>CI</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Demonstrável em 1 comando</h2>
+      <p class="section-intro">Sobe tudo com Docker Compose e simula os dois sistemas externos com scripts prontos.</p>
+      <div class="code-card" style="margin-top:0">
+        <div class="bar"><i></i><i></i><i></i></div>
+<pre>$ docker compose up -d
+<span class="c"># API em http://localhost:8080 · Swagger em /swagger-ui.html</span>
+
+$ ./scripts/a_send_order.sh A-123456   <span class="c"># Sistema A envia</span>
+$ ./scripts/b_pull_orders.sh           <span class="c"># Sistema B consulta calculados</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="preco">
+    <div class="container">
+      <h2 class="section-title">Preço</h2>
+      <p class="section-intro">Licença comercial de uso (não open source). Você tem o código e o controle total.</p>
+      <div class="offer-wrap">
+        <div class="offer">
+          <div class="tag">Licença Template</div>
+          <div class="price">R$ 497</div>
+          <ul>
+            <li>Código-fonte completo + documentação (ADRs, runbook)</li>
+            <li>Uso em produtos próprios e de clientes, sem limite de produtos finais</li>
+            <li>Correções e atualizações da versão vigente</li>
+            <li>Entrega digital</li>
+          </ul>
+          <a class="cta-secondary" href="https://pay.kiwify.com.br/l2v6dYI" target="_blank" rel="noopener">Comprar agora</a>
+        </div>
+        <div class="offer offer--featured">
+          <div class="tag">Licença + Walkthrough</div>
+          <div class="price">sob consulta</div>
+          <ul>
+            <li>Tudo da Licença Template</li>
+            <li>Walkthrough técnico de 1h (arquitetura e decisões)</li>
+            <li>Orientação para adaptar ao seu domínio</li>
+            <li>Tira-dúvidas inicial</li>
+          </ul>
+          <a class="cta-primary" href="mailto:felipericartem@gmail.com?subject=Order%20Service%20Template%20%2B%20Walkthrough">Quero com walkthrough</a>
+        </div>
+      </div>
+      <p class="section-intro" style="margin-top:20px;margin-bottom:0;font-size:14px">Implantação assistida e adaptação ao seu domínio: pacote separado, sob consulta.</p>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="bundle">
+    <div class="container">
+      <div class="bundle">
+        <h3>Kit de Padrões de Produção — Order Service + AssinaFlow</h3>
+        <p>Junte a <strong>ingestão idempotente de pedidos</strong> ao <strong>ciclo de cobrança recorrente confiável</strong> (outbox, idempotência, retry determinístico) do AssinaFlow. A fundação de backend que a maioria dos produtos precisa — por um preço de bundle.</p>
+        <a class="cta-primary" href="mailto:felipericartem@gmail.com?subject=Kit%20de%20Padr%C3%B5es%20de%20Produ%C3%A7%C3%A3o%20(Order%20Service%20%2B%20AssinaFlow)">Quero o bundle</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section faq" id="faq">
+    <div class="container">
+      <h2 class="section-title">Perguntas frequentes</h2>
+      <details><summary>É open source?</summary><p>Não. É um produto comercial licenciado: você pode usar, modificar e incorporar em produtos próprios e de clientes, mas não revender/redistribuir o código como template. Os termos completos vêm no arquivo LICENSE.</p></details>
+      <details><summary>Como a idempotência funciona sob concorrência?</summary><p>A deduplicação é por <code>externalOrderId</code> com garantia no banco, então mesmo com várias instâncias recebendo o mesmo pedido simultaneamente, ele é criado uma única vez (201), e as repetições retornam o existente (200).</p></details>
+      <details><summary>Inclui suporte?</summary><p>A licença é entregue "as-is" com documentação. Walkthrough de 1h e implantação assistida são pacotes opcionais.</p></details>
+      <details><summary>Serve para qual caso de uso?</summary><p>Integração de pedidos entre sistemas (ERP ↔ e-commerce ↔ logística) e como referência sólida de microserviço idempotente em Spring Boot com Clean Architecture, ADRs e runbook.</p></details>
+      <details><summary>Posso combinar com o AssinaFlow?</summary><p>Sim — é o Kit de Padrões de Produção. Ingestão idempotente + cobrança recorrente confiável, com preço de bundle.</p></details>
+    </div>
+  </section>
+
+  <section class="section" style="text-align:center">
+    <div class="container">
+      <h2 class="section-title">Comece com a fundação certa</h2>
+      <p class="section-intro">Pegue o template, suba em 1 comando e adapte ao seu domínio.</p>
+      <div class="cta-row">
+        <a class="cta-primary" href="https://pay.kiwify.com.br/l2v6dYI" target="_blank" rel="noopener">Comprar a licença</a>
+        <a class="cta-secondary" href="mailto:felipericartem@gmail.com?subject=Kit%20de%20Padr%C3%B5es%20de%20Produ%C3%A7%C3%A3o">Falar sobre o bundle</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p><span class="brand">Order Service</span> — template de ingestão idempotente de pedidos em Spring Boot.</p>
+      <p style="margin-top:8px">Por Felipe Ricarte Magalhães · felipericartem@gmail.com</p>
+    </div>
+  </footer>
+</body>
+</html>
